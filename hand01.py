@@ -37,7 +37,7 @@ with mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5) a
             for num, hand in enumerate(results.multi_hand_landmarks):
                 mp_drawings.draw_landmarks(image, hand, mp_hands.HAND_CONNECTIONS)
 
-
+        image = cv2.flip(image, 1)
         cv2.imshow('Track my hand', image)
 
         if cv2.waitKey(1) == ord('q'):
