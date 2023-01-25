@@ -1,8 +1,7 @@
 import mediapipe as mp
 import cv2
 import numpy as np
-import uuid
-import os
+
 
 mp_drawings = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
