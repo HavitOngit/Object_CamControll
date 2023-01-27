@@ -22,10 +22,23 @@ while True:
     # draw landmarks if hand detected
     if result.multi_hand_landmarks:
         for hand_mark in result.multi_hand_landmarks:
+            lmlist = []
             for id, lm in enumerate(hand_mark.landmark):
                 h, w, c = frame.shape
                 cx, cy = int(lm.x * w), int(lm.y * h)
-                print(id, cx, cy)
+                lmlist.append([id, cx, cy])
+
+
+            if len(lmlist) != 0:
+                print(lmlist[4])
+
+                # draw circuls on tip
+                x1, y1 = lmlist[4][1], lmlist[4][2]
+                x2, y2 = lmlist[8][1], lmlist[8][2]
+
+                #draw
+                cv2.circle(frame, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+                cv2.circle(frame, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
 
             mp_draw.draw_landmarks(frame, hand_mark, mpHands.HAND_CONNECTIONS)
 
