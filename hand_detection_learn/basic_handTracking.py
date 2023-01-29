@@ -14,7 +14,7 @@ cam = cv2.VideoCapture(0)
 
 while True:
     success, frame = cam.read()
-
+    frame = cv2.flip(frame, 1)
     # bgr->rgb for batter detection
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -45,8 +45,8 @@ while True:
                 cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
                 # circle
-                r = math.hypot(x2 - cirx, y2 - ciry)
-                cv2.circle(frame, (cirx, ciry), int(30), (215, 15, 45), 5)
+                #r = math.hypot(x2 - cirx, y2 - ciry)
+                #cv2.circle(frame, (cirx, ciry), int(30), (215, 15, 45), 5)
 
                 # legth
                 legth = math.hypot(x2 - x1, y2 - y1)
@@ -63,17 +63,19 @@ while True:
                 conLen = np.interp(legth, [15, 200], [0, 100])
                 print(f"{legth}...Converted to...{conLen}")
 
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(frame, str((x2, y1)), (x2, y2), font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+
             mp_draw.draw_landmarks(frame, hand_mark, mpHands.HAND_CONNECTIONS)
     # draw reference line
 
 
-    frame = cv2.flip(frame, 1)
     cv2.imshow('Hand_Detector', frame)
 
     if cv2.waitKey(1) == ord('q'):
         break
 
 cam.release()
-cv2.destroyAllwindows()
+cv2.destroyAllWindows()
 
 

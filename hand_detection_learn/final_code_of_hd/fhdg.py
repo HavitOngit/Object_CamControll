@@ -17,7 +17,13 @@ cam = cv2.VideoCapture(0)
 
 tip_id = [4, 8, 12, 16, 20]
 
+# game var
+
 legth = 1
+
+rot_x = 1
+r_right = False
+r_left = False
 def cam_fuc():
     while True:
         success, frame = cam.read()
@@ -46,7 +52,7 @@ def cam_fuc():
                     elif hand_side == 'Right':
                         hand_side = 'Left'
 
-                    print(hand_side)
+                    #print(hand_side)
 
             # landmarks
             for hand_mark in result.multi_hand_landmarks:
@@ -74,7 +80,29 @@ def cam_fuc():
                         else:
                             fingers.append(0)
 
-                    print(fingers)
+                    #print(fingers)
+
+                    # rotation logic
+                    wx, wy = lmlist[0][1], lmlist[0][2]
+                    tx, ty = lmlist[12][1], lmlist[12][2]
+
+                    global rot_x
+                    rot_x = wx - tx
+
+                    if rot_x > 100:
+                        print('right')
+                        global r_right
+                        r_right = True
+                    elif rot_x < -100:
+                        print('left')
+                        global r_left
+                        r_left = True
+
+                    else:
+                        r_left = False
+                        r_right = False
+
+
 
                     # draw circuls on tip
                     x1, y1 = lmlist[4][1], lmlist[4][2]
@@ -96,7 +124,7 @@ def cam_fuc():
 
                     # convert lenght in 1 2 100 format
                     conLen = np.interp(legth, [15, 200], [0, 100])
-                    print(f"{legth}...Converted to...{conLen}")
+                    ##print(f"{legth}...Converted to...{conLen}")
 
                 mp_draw.draw_landmarks(frame, hand_mark, mpHands.HAND_CONNECTIONS)
         # draw reference line
@@ -133,11 +161,19 @@ window.fps_counter.enable = True
 
 
 def update():
-    cube.rotation_y += int(legth) * time.dt * 10
+    #cube.rotation_y += int(legth) * time.dt * 10
     camera_mov()
 
+    # rotation by hand
+    if r_right:
+        cube.rotation_y -= time.dt * 1 * np.abs(rot_x)
+        print('done')
+    elif r_left:
+        cube.rotation_y += time.dt * 1 * np.abs(rot_x)
+
     if int(legth) > 80:
-        cube.scale = cube.scale.x + 1
+        pass
+        #cube.scale = cube.scale.x + 1
     if held_keys['z']:
         cube.rotation_z += time.dt * 50
     if held_keys['x']:
