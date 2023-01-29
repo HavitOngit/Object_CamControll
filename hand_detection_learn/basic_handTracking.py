@@ -1,5 +1,8 @@
+import math
 import cv2
+from costom_fun import angle_between_lines
 import mediapipe as mp
+import numpy as np
 
 # mediapipe conf
 mpHands = mp.solutions.hands
@@ -35,12 +38,34 @@ while True:
                 # draw circuls on tip
                 x1, y1 = lmlist[4][1], lmlist[4][2]
                 x2, y2 = lmlist[8][1], lmlist[8][2]
-
+                cirx, ciry = lmlist[0][1], lmlist[0][2]
                 #draw
-                cv2.circle(frame, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
-                cv2.circle(frame, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
+                #cv2.circle(frame, (x1, y1), 15, (255, 0, 255), cv2.FILLED)
+                #cv2.circle(frame, (x2, y2), 15, (255, 0, 255), cv2.FILLED)
+                cv2.line(frame, (x1, y1), (x2, y2), (255, 0, 255), 3)
+
+                # circle
+                r = math.hypot(x2 - cirx, y2 - ciry)
+                cv2.circle(frame, (cirx, ciry), int(30), (215, 15, 45), 5)
+
+                # legth
+                legth = math.hypot(x2 - x1, y2 - y1)
+                #print(angle_between_lines(x1, y1, x2, y2, 0, 200, 200, 200))
+                # print(legth)
+
+                #cx, cy = (x1 + x2) // 2,  (y1 + y2) // 2
+
+                if legth < 25:
+                    cv2.circle(frame, (x1, y1), 15, (0, 255, 0), cv2.FILLED)
+                    cv2.circle(frame, (x2, y2), 15, (0, 255, 0), cv2.FILLED)
+
+                # convert lenght in 1 2 100 format
+                conLen = np.interp(legth, [15, 200], [0, 100])
+                print(f"{legth}...Converted to...{conLen}")
 
             mp_draw.draw_landmarks(frame, hand_mark, mpHands.HAND_CONNECTIONS)
+    # draw reference line
+
 
     frame = cv2.flip(frame, 1)
     cv2.imshow('Hand_Detector', frame)
@@ -50,4 +75,5 @@ while True:
 
 cam.release()
 cv2.destroyAllwindows()
+
 
