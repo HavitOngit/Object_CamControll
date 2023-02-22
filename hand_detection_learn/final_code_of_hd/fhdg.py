@@ -22,8 +22,42 @@ tip_id = [4, 8, 12, 16, 20]
 legth = 1
 
 rot_x = 1
+rot_y = 1
+stop = False
 r_right = False
 r_left = False
+r_up = False
+r_down = False
+scaleUp = False
+scaleDown = False
+
+ref_x, ref_y = 0, 0
+def rotation_hand_X(rot_x):
+    if rot_x > 100:
+        print('right')
+        global r_right
+        r_right = True
+    elif rot_x < -100:
+        print('left')
+        global r_left
+        r_left = True
+    else:
+        r_left = False
+        r_right = False
+
+def rotation_hand_Y(rot_y):
+    # up-down
+
+    if rot_y < 100:
+        print('up')
+        global r_up
+        r_up = True
+
+    elif rot_y < -100:
+        print('down')
+        global r_down
+        r_down = True
+
 def cam_fuc():
     while True:
         success, frame = cam.read()
@@ -86,21 +120,61 @@ def cam_fuc():
                     wx, wy = lmlist[0][1], lmlist[0][2]
                     tx, ty = lmlist[12][1], lmlist[12][2]
 
-                    global rot_x
+                    global rot_x, rot_y
                     rot_x = wx - tx
+                    rot_y = wy - ty
+                    #print(rot_y)
+                    #rotation_hand_X(rot_x)
 
-                    if rot_x > 100:
-                        print('right')
-                        global r_right
-                        r_right = True
-                    elif rot_x < -100:
-                        print('left')
-                        global r_left
-                        r_left = True
-
+                    if sum(fingers) == 5:
+                        global stop
+                        stop = True
+                        global ref_x, ref_y
+                        ref_x, ref_y = lmlist[9][1], lmlist[9][2]
                     else:
-                        r_left = False
-                        r_right = False
+                        stop = False
+
+
+
+
+                    if sum(fingers) == 1 or sum(fingers) == 0:
+                        print('fist')
+                        tx, ty = lmlist[9][1], lmlist[9][2]
+                        nx, ny = ref_x - tx, ref_y - ty
+                        # reference point
+                        print(f'{ref_y} - {ty} = {ny}')
+
+
+                        rot_x = nx
+                        rot_y = ny
+
+                        if nx > 100:
+                            global r_right
+                            r_right = True
+                            print('x')
+                        elif nx < -100:
+                            global r_left
+                            r_left = True
+                            print('-x')
+                        elif ny > 70:
+                            global r_up
+                            r_up = True
+                            print('y')
+                        elif ny < -70:
+                            global r_down
+                            r_down = True
+                            print('-y')
+                        else:
+                            r_left = False
+                            r_right = False
+                            r_down = False
+                            r_up = False
+
+
+
+
+
+
 
 
 
@@ -118,9 +192,9 @@ def cam_fuc():
                     global legth
                     legth = math.hypot(x2 - x1, y2 - y1)
 
-                    if legth < 25:
-                        cv2.circle(frame, (x1, y1), 15, (0, 255, 0), cv2.FILLED)
-                        cv2.circle(frame, (x2, y2), 15, (0, 255, 0), cv2.FILLED)
+                    if fingers[4] == 0 & sum(fingers) == 1 & both_hand:
+                        print('scale activeted')
+
 
                     # convert lenght in 1 2 100 format
                     conLen = np.interp(legth, [15, 200], [0, 100])
@@ -131,7 +205,7 @@ def cam_fuc():
 
         frame = cv2.flip(frame, 1)
 
-        cv2.imshow('Hand_Detector', frame)
+        #cv2.imshow('Hand_Detector', frame)
 
         if cv2.waitKey(1) == ord('q'):
             break
@@ -163,13 +237,19 @@ window.fps_counter.enable = True
 def update():
     #cube.rotation_y += int(legth) * time.dt * 10
     camera_mov()
+    print('cube scale:' + str(cube.scale_x))
 
     # rotation by hand
-    if r_right:
-        cube.rotation_y -= time.dt * 1 * np.abs(rot_x)
-        print('done')
-    elif r_left:
-        cube.rotation_y += time.dt * 1 * np.abs(rot_x)
+    if not stop:
+        if r_right:
+            cube.rotation_y -= time.dt * 1 * np.abs(rot_x)
+            print('done')
+        elif r_left:
+            cube.rotation_y += time.dt * 1 * np.abs(rot_x)
+        elif r_up:
+            cube.rotation_x -= time.dt * 1 * np.abs(rot_y)
+        elif r_down:
+            cube.rotation_x += time.dt * 1 * np.abs(rot_y)
 
     if int(legth) > 80:
         pass
